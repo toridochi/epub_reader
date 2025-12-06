@@ -1,37 +1,25 @@
-/* ============================================================
-   GLOBAL THEME
-============================================================ */
-:root {
-    --bg: #f5f5f7;
-    --text: #222;
-    --card-bg: #ffffff;
-    --card-border: #ddd;
-    --accent: #007aff;
+/* ===========================
+   GLOBAL
+=========================== */
+body {
+    font-family: "Inter", "Segoe UI", sans-serif;
+    margin: 0;
+    background: #f5f5f7;
+    color: #2c2c2c;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 .dark {
-    --bg: #1c1c1e;
-    --text: #e5e5ea;
-    --card-bg: #2c2c2e;
-    --card-border: #444;
-    --accent: #0a84ff;
+    background: #1c1c1e !important;
+    color: #e5e5ea !important;
 }
 
-body {
-    margin: 0;
-    padding: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: "Inter", sans-serif;
-    transition: background 0.3s, color 0.3s;
-}
-
-/* ============================================================
-   HOME PAGE HEADER
-============================================================ */
+/* ===========================
+   HEADER
+=========================== */
 .home-header {
-    max-width: 1100px;
-    margin: 20px auto 10px;
+    max-width: 1200px;
+    margin: 25px auto 0;
     padding: 0 20px;
     display: flex;
     justify-content: space-between;
@@ -46,243 +34,229 @@ body {
     gap: 10px;
 }
 
+/* Tools */
 .header-tools {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
-/* Search */
 .search-box {
-    padding: 8px 12px;
-    font-size: 14px;
-    border-radius: 8px;
-    border: 1px solid var(--card-border);
-    background: var(--card-bg);
-    color: var(--text);
-    width: 180px;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    width: 190px;
+    transition: 0.25s;
+}
+
+.search-box:focus {
+    border-color: #007aff;
+    outline: none;
+    box-shadow: 0 0 4px rgba(0,122,255,0.3);
 }
 
 .dark .search-box {
+    background: #2c2c2e;
     border-color: #555;
+    color: white;
 }
 
 #themeToggle {
-    cursor: pointer;
-    font-size: 20px;
     background: none;
     border: none;
+    font-size: 22px;
+    cursor: pointer;
 }
 
-/* ============================================================
-   BOOK GRID
-============================================================ */
-.book-grid {
-    max-width: 1100px;
-    margin: auto;
-    padding: 20px;
+/* ===========================
+   HERO BANNER
+=========================== */
+.hero {
+    width: 100%;
+    background: linear-gradient(135deg, #007aff 0%, #00c6ff 100%);
+    border-radius: 18px;
+    max-width: 1200px;
+    margin: 25px auto;
+    padding: 40px 35px;
+    color: white;
+}
+
+.hero-content h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.hero-content p {
+    margin-top: 0;
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.dark .hero {
+    background: linear-gradient(135deg, #0a84ff 0%, #3c9dff 100%);
+}
+
+/* ===========================
+   SECTION TITLES
+=========================== */
+.section {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.section-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+/* ===========================
+   FEATURED + RECENT GRID
+=========================== */
+.featured-grid,
+.recent-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 26px;
+    gap: 28px;
 }
 
-/* ============================================================
-   BOOK CARD (Version 2)
-============================================================ */
-.book-card-2 {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 14px;
+/* ===========================
+   BOOK CARD (Premium)
+=========================== */
+.book-card {
+    background: white;
+    border-radius: 18px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-    transition: 0.25s;
-    padding-bottom: 14px;
+    box-shadow: 0 8px 26px rgba(0,0,0,0.08);
+    transition: 0.28s ease;
 }
 
-.book-card-2:hover {
+.dark .book-card {
+    background: #2c2c2e;
+    box-shadow: 0 0 12px rgba(255,255,255,0.05);
+}
+
+.book-card:hover {
     transform: translateY(-6px);
 }
 
 /* Cover */
-.book-cover-2 img {
+.book-cover {
     width: 100%;
     height: 230px;
-    object-fit: cover;
-    border-bottom: 1px solid var(--card-border);
-}
-
-/* Title */
-.book-title-2 {
-    font-size: 15px;
-    font-weight: 600;
-    padding: 10px 12px 5px;
-    height: 40px;
     overflow: hidden;
-    line-height: 1.2;
+    background: #f0f0f0;
 }
 
-/* Read button */
-.read-btn-2 {
-    display: block;
-    margin: 10px 12px 0;
-    padding: 8px 0;
-    text-align: center;
-    text-decoration: none;
-    font-size: 14px;
-    color: #fff;
-    background: var(--accent);
-    border-radius: 8px;
+.book-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-.read-btn-2:hover {
-    opacity: 0.8;
+/* Info */
+.book-info {
+    padding: 14px;
 }
 
-/* ============================================================
-   LOADING & ERROR
-============================================================ */
-.loading {
-    text-align: center;
-    font-size: 16px;
-    padding: 40px;
+.book-title {
+    font-size: 15px;
+    font-weight: 650;
+    height: 42px;
+    overflow: hidden;
+    margin-bottom: 10px;
 }
 
-/* ============================================================
-   EPUB READER PAGE
-============================================================ */
-.reader-header {
-    background: var(--card-bg);
-    color: var(--text);
-    border-bottom: 1px solid var(--card-border);
-}
-
-#book-title {
-    color: var(--text);
-}
-
-#viewer {
-    background: var(--bg);
-}
-
-/* Navigation click areas */
-.nav-area:hover {
-    background: rgba(0,0,0,0.03);
-}
-.dark .nav-area:hover {
-    background: rgba(255,255,255,0.05);
-}
-
-/* Back button */
-.back-btn {
-    padding: 7px 12px;
-    background: var(--accent);
-    border-radius: 6px;
+/* Read Button */
+.read-btn {
+    display: inline-block;
+    padding: 8px 14px;
+    background: #007aff;
     color: white;
-    text-decoration: none;
     font-size: 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: 0.2s;
 }
 
-.back-btn:hover {
-    opacity: 0.85;
+.read-btn:hover {
+    background: #0058d6;
 }
 
-/* ============================================================
-   TOC PANEL
-============================================================ */
-#tocPanel {
-    color: var(--text);
+/* ===========================
+   SKELETON LOADING
+=========================== */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #fafafa 37%, #f0f0f0 63%);
+    background-size: 400% 100%;
+    animation: skeleton-loading 1.2s infinite ease-in-out;
+    height: 300px;
+    border-radius: 18px;
 }
 
-#tocPanel div {
-    padding: 8px;
-    border-bottom: 1px solid var(--card-border);
-    cursor: pointer;
-    font-size: 15px;
+@keyframes skeleton-loading {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
 }
 
-#tocPanel div:hover {
-    background: rgba(0,0,0,0.05);
+/* ===========================
+   ALL BOOKS GRID
+=========================== */
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 28px;
 }
 
-.dark #tocPanel div:hover {
-    background: rgba(255,255,255,0.08);
-}
-
-/* ============================================================
-   RESPONSIVE
-============================================================ */
-@media (max-width: 480px) {
-    .home-header h1 {
-        font-size: 24px;
-    }
-
-    .book-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    }
-
-    .book-cover-2 img {
-        height: 200px;
-    }
-}
-/* ===== FOOTER ===== */
-.footer {
-    text-align: center;
-    padding: 25px 0;
-    font-size: 15px;
-    color: #555;
-    opacity: 0.8;
-}
-
-.dark .footer {
-    color: #ddd;
-}
-
-/* ====== PREMIUM FOOTER ====== */
+/* ===========================
+   FOOTER
+=========================== */
 .footer {
     width: 100%;
-    padding: 30px 0 40px;
-    margin-top: 40px;
+    padding: 25px 0;
+    margin-top: 50px;
+    background: transparent;
     display: flex;
     justify-content: center;
-    align-items: center;
 }
 
-.footer-box {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(12px);
-    padding: 12px 28px;
+.footer-inner {
+    padding: 12px 22px;
+    background: white;
     border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.07);
     display: flex;
     align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
-    border: 1px solid rgba(255,255,255,0.6);
-    transition: 0.25s ease;
-}
-
-.footer-box:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 22px rgba(0,0,0,0.12);
-}
-
-.footer-box .icon {
-    font-size: 20px;
-}
-
-.footer-box .text {
+    gap: 12px;
     font-size: 15px;
-    color: #444;
-    font-weight: 500;
 }
 
-/* Dark mode */
-.dark .footer-box {
-    background: rgba(40,40,40,0.55);
-    border: 1px solid rgba(255,255,255,0.08);
-    box-shadow: 0 4px 15px rgba(255,255,255,0.05);
+.dark .footer-inner {
+    background: #2c2c2e;
 }
 
-.dark .footer-box .text {
-    color: #ddd;
+.footer-inner .dot {
+    width: 6px;
+    height: 6px;
+    background: #007aff;
+    border-radius: 50%;
 }
 
+/* ===========================
+   RESPONSIVE
+=========================== */
+@media (max-width: 720px) {
+    .hero-content h2 {
+        font-size: 22px;
+    }
+
+    .book-cover {
+        height: 200px;
+    }
+
+    .home-header h1 {
+        font-size: 26px;
+    }
+}
