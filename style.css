@@ -67,38 +67,6 @@ body {
     font-size: 22px;
     cursor: pointer;
 }
-.brand-banner {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 20px 25px;
-    background: linear-gradient(135deg, #007aff, #00c6ff);
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    color: white;
-    box-shadow: 0 8px 22px rgba(0,0,0,0.12);
-}
-
-.brand-banner .brand-avatar {
-    width: 48px;
-    height: 48px;
-}
-
-.brand-banner-info h3 {
-    margin: 0;
-    font-size: 22px;
-    font-weight: 700;
-}
-
-.brand-banner-info p {
-    margin: 3px 0 0;
-    opacity: 0.9;
-}
-
-.dark .brand-banner {
-    background: linear-gradient(135deg, #0a84ff, #3c9dff);
-}
 
 
 /* ===========================
@@ -293,4 +261,5 @@ body {
         font-size: 26px;
     }
 }
+
 
