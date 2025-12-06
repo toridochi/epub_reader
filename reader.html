@@ -11,27 +11,46 @@
 <script src="js/epub.min.js"></script>
 
 <style>
+/* ------------------- THEME ------------------- */
+:root {
+    --bg: #ffffff;
+    --text: #111;
+    --header-bg: #fff;
+    --header-border: #ddd;
+    --nav-hover: rgba(0,0,0,0.04);
+}
+
+body.dark {
+    --bg: #1c1c1e;
+    --text: #e5e5ea;
+    --header-bg: #2c2c2e;
+    --header-border: #444;
+    --nav-hover: rgba(255,255,255,0.05);
+}
+
 body {
     margin: 0;
     overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
 }
 
-/* Top header */
+/* ------------------- HEADER ------------------- */
 .reader-header {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 55px;
-    background: #ffffff;
-    border-bottom: 1px solid #ddd;
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--header-border);
     display: flex;
     align-items: center;
     padding: 10px 15px;
-    z-index: 10;
+    z-index: 20;
 }
 
-.reader-header .back-btn {
+.back-btn {
     padding: 8px 12px;
     background: #007bff;
     color: #fff;
@@ -41,6 +60,19 @@ body {
     font-size: 14px;
 }
 
+.header-btn {
+    padding: 6px 10px;
+    background: #eee;
+    border-radius: 6px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+body.dark .header-btn {
+    background: #3a3a3c;
+    color: #e5e5ea;
+}
+
+/* ------------------- PROGRESS BAR ------------------- */
 #progressBar {
     height: 3px;
     width: 0%;
@@ -48,7 +80,7 @@ body {
     margin-top: 55px;
 }
 
-/* AREA DISPLAY EPUB */
+/* ------------------- VIEWER ------------------- */
 #viewer {
     position: fixed;
     top: 58px;
@@ -56,10 +88,10 @@ body {
     width: 100%;
     height: calc(100vh - 58px);
     overflow: hidden;
-    background: #fdfdfd;
+    background: var(--bg);
 }
 
-/* Invisible click zones */
+/* ------------------- CLICK NAVIGATION ------------------- */
 .nav-area {
     position: fixed;
     top: 58px;
@@ -67,50 +99,89 @@ body {
     height: calc(100vh - 58px);
     z-index: 15;
 }
-
 #prevArea { left: 0; }
 #nextArea { right: 0; }
 
-#prevArea:hover, #nextArea:hover {
-    background: rgba(0,0,0,0.02);
+.nav-area:hover {
+    background: var(--nav-hover);
+}
+
+/* ------------------- TOC DRAWER ------------------- */
+#tocDrawer {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 260px;
+    height: 100vh;
+    background: var(--header-bg);
+    border-right: 1px solid var(--header-border);
+    padding: 15px;
+    transition: 0.25s;
+    z-index: 30;
+    overflow-y: auto;
+}
+
+#tocDrawer.open {
+    left: 0;
+}
+
+.toc-item {
+    padding: 8px 5px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.toc-item:hover {
+    background: var(--nav-hover);
+}
+
+.toc-current {
+    background: #007bff !important;
+    color: white !important;
 }
 </style>
 </head>
 
 <body>
 
+<!-- TOC DRAWER -->
+<div id="tocDrawer">
+    <h3>📖 Contents</h3>
+    <div id="tocList">Loading...</div>
+</div>
+
+<!-- HEADER -->
 <div class="reader-header">
     <a class="back-btn" href="index.html">← Back</a>
-    <h2 id="book-title">Loading...</h2>
+    <h2 id="book-title" style="flex:1;">Loading...</h2>
+
+    <button id="tocBtn" class="header-btn">📖 TOC</button>
 </div>
 
 <div id="progressBar"></div>
 
+<!-- READER VIEW -->
 <div id="viewer"></div>
 
 <div id="prevArea" class="nav-area"></div>
 <div id="nextArea" class="nav-area"></div>
 
 <script>
-/* -------------------------
-   LOAD EPUB SOURCE
--------------------------- */
+/* APPLY THEME FROM INDEX PAGE */
+if (localStorage.getItem("theme") === "dark") {
+    document.body.classList.add("dark");
+}
+
+/* LOAD EPUB */
 const params = new URLSearchParams(window.location.search);
 const fileUrl = params.get("src");
 
-if (!fileUrl) {
-    document.body.innerHTML = "<h2>Missing EPUB source</h2>";
-    throw new Error("Missing src param");
-}
+if (!fileUrl) alert("Missing src parameter");
 
 const fileName = decodeURIComponent(fileUrl.split("/").pop());
 document.getElementById("book-title").textContent = fileName;
 
 const saveKey = "pos_" + fileName;
 
-/* -------------------------
-   INIT EPUB
--------------------------- */
 const book = ePub(fileUrl);
 
 const rendition = book.renderTo("viewer", {
@@ -121,11 +192,10 @@ const rendition = book.renderTo("viewer", {
     allowScriptedContent: true
 });
 
-/* Restore last position */
 let saved = localStorage.getItem(saveKey);
 rendition.display(saved || undefined);
 
-/* Save progress */
+/* SAVE PROGRESS */
 rendition.on("relocated", (loc) => {
     localStorage.setItem(saveKey, loc.start.cfi);
 
@@ -133,18 +203,55 @@ rendition.on("relocated", (loc) => {
         let pct = book.locations.percentageFromCfi(loc.start.cfi);
         document.getElementById("progressBar").style.width = (pct * 100) + "%";
     }
+
+    updateTOCHighlight(loc.start.cfi);
 });
 
-/* Generate locations */
+/* GENERATE LOCATIONS */
 book.ready.then(() => book.locations.generate(1500));
 
-/* -------------------------
-   PAGE NAVIGATION
--------------------------- */
+/* -------------------------- TOC LOADER -------------------------- */
+book.loaded.navigation.then(nav => {
+    const toc = nav.toc;
+    const tocList = document.getElementById("tocList");
+
+    tocList.innerHTML = "";
+
+    toc.forEach(item => {
+        let div = document.createElement("div");
+        div.className = "toc-item";
+        div.textContent = item.label;
+        div.dataset.href = item.href;
+
+        div.onclick = () => {
+            rendition.display(item.href);
+            toggleTOC(false);
+        };
+
+        tocList.appendChild(div);
+    });
+});
+
+/* Highlight current TOC item */
+function updateTOCHighlight(cfi) {
+    const items = document.querySelectorAll(".toc-item");
+    items.forEach(el => el.classList.remove("toc-current"));
+}
+
+/* -------------------------- TOC TOGGLE -------------------------- */
+function toggleTOC(forceState) {
+    const drawer = document.getElementById("tocDrawer");
+    if (forceState === true) drawer.classList.add("open");
+    else if (forceState === false) drawer.classList.remove("open");
+    else drawer.classList.toggle("open");
+}
+
+document.getElementById("tocBtn").onclick = () => toggleTOC();
+
+/* -------------------------- PAGE NAVIGATION -------------------------- */
 document.getElementById("prevArea").onclick = () => rendition.prev();
 document.getElementById("nextArea").onclick = () => rendition.next();
 
-/* Keyboard arrows */
 document.addEventListener("keydown", (e) => {
     if (e.key === "ArrowRight") rendition.next();
     if (e.key === "ArrowLeft") rendition.prev();
