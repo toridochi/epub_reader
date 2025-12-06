@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>My Digital Library</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script src="js/jszip.min.js"></script>
+    <script src="js/epub.min.js"></script>
+</head>
+
+<body>
+
+<header class="home-header">
+    <h1>📚 My Digital Library</h1>
+
+    <div class="header-tools">
+        <input id="searchInput" class="search-box" type="text" placeholder="Search books...">
+
+        <button id="themeToggle">🌙</button>
+    </div>
+</header>
+
+<div id="book-grid" class="book-grid">
+    <div class="loading">Loading books...</div>
+</div>
+
+<script>
+document.getElementById("themeToggle").onclick = () => {
+    document.body.classList.toggle("dark");
+};
+
+// ===== LOAD ONLY EPUB BOOKS =====
+async function loadBooks() {
+    const response = await fetch("books/");
+    const text = await response.text();
+    const parser = new DOMParser();
+    const html = parser.parseFromString(text, "text/html");
+
+    let links = [...html.querySelectorAll("a")];
+
+    // Chỉ lấy file .epub
+    let books = links
+        .map(a => a.getAttribute("href"))
+        .filter(n => n.endsWith(".epub"));
+
+    displayBooks(books);
+}
+
+loadBooks();
+
+// ===== DISPLAY BOOK CARDS =====
+async function displayBooks(files) {
+    const grid = document.getElementById("book-grid");
+    grid.innerHTML = "";
+
+    for (let file of files) {
+        const cleanName = decodeURIComponent(file).replace(/_/g, " ");
+
+        // Default cover
+        let coverImage = "default_cover.png";
+
+        // Try load EPUB cover
+        try {
+            const book = ePub("books/" + file);
+            const cover = await book.coverUrl();
+
+            if (cover) coverImage = cover;
+        } catch (e) {
+            coverImage = "default_cover.png";
+        }
+
+        const div = document.createElement("div");
+        div.className = "book-card-2";
+        div.dataset.name = cleanName.toLowerCase();
+
+        div.innerHTML = `
+            <div class="book-cover-2">
+                <img src="${coverImage}" onerror="this.src='default_cover.png'">
+            </div>
+            <div class="book-title-2">${cleanName}</div>
+            <a class="read-btn-2" href="reader.html?file=${encodeURIComponent(file)}">Read</a>
+        `;
+
+        grid.appendChild(div);
+    }
+}
+
+// ===== SEARCH =====
+document.getElementById("searchInput").addEventListener("input", (e) => {
+    const q = e.target.value.toLowerCase();
+    const items = document.querySelectorAll(".book-card-2");
+
+    items.forEach(card => {
+        const name = card.dataset.name;
+        card.style.display = name.includes(q) ? "block" : "none";
+    });
+});
+</script>
+
+</body>
+</html>
