@@ -7,19 +7,16 @@
 
 <link rel="stylesheet" href="style.css">
 
-<!-- EPUB.js -->
 <script src="js/jszip.min.js"></script>
 <script src="js/epub.min.js"></script>
 
 <style>
-/* Reader layout */
-#viewer {
-    width: 100%;
-    height: calc(100vh - 60px);
-    margin-top: 60px;
+body {
+    margin: 0;
     overflow: hidden;
 }
 
+/* Top header */
 .reader-header {
     position: fixed;
     top: 0;
@@ -31,7 +28,7 @@
     display: flex;
     align-items: center;
     padding: 10px 15px;
-    z-index: 20;
+    z-index: 10;
 }
 
 .reader-header .back-btn {
@@ -44,23 +41,44 @@
     font-size: 14px;
 }
 
-.reader-header h2 {
-    font-size: 18px;
-    margin: 0;
-    flex: 1;
-}
-
 #progressBar {
     height: 3px;
     width: 0%;
     background: #007bff;
+    margin-top: 55px;
+}
+
+/* AREA DISPLAY EPUB */
+#viewer {
+    position: fixed;
+    top: 58px;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 58px);
+    overflow: hidden;
+    background: #fdfdfd;
+}
+
+/* Invisible click zones */
+.nav-area {
+    position: fixed;
+    top: 58px;
+    width: 50%;
+    height: calc(100vh - 58px);
+    z-index: 15;
+}
+
+#prevArea { left: 0; }
+#nextArea { right: 0; }
+
+#prevArea:hover, #nextArea:hover {
+    background: rgba(0,0,0,0.02);
 }
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <div class="reader-header">
     <a class="back-btn" href="index.html">← Back</a>
     <h2 id="book-title">Loading...</h2>
@@ -68,65 +86,68 @@
 
 <div id="progressBar"></div>
 
-<!-- VIEWPORT FOR EPUB -->
 <div id="viewer"></div>
 
+<div id="prevArea" class="nav-area"></div>
+<div id="nextArea" class="nav-area"></div>
+
 <script>
-// =============== READ EPUB FROM URL PARAM ===============
+/* -------------------------
+   LOAD EPUB SOURCE
+-------------------------- */
 const params = new URLSearchParams(window.location.search);
 const fileUrl = params.get("src");
 
 if (!fileUrl) {
-    alert("Missing 'src' parameter");
+    document.body.innerHTML = "<h2>Missing EPUB source</h2>";
+    throw new Error("Missing src param");
 }
 
-// Extract filename for title
 const fileName = decodeURIComponent(fileUrl.split("/").pop());
 document.getElementById("book-title").textContent = fileName;
 
-// Storage key for saving progress
 const saveKey = "pos_" + fileName;
 
-// =============== INIT EPUB BOOK ===============
+/* -------------------------
+   INIT EPUB
+-------------------------- */
 const book = ePub(fileUrl);
+
 const rendition = book.renderTo("viewer", {
     width: "100%",
     height: "100%",
-    flow: "paginated"
+    spread: "auto",
+    flow: "paginated",
+    allowScriptedContent: true
 });
 
-// Load saved position
-let savedPos = localStorage.getItem(saveKey);
-rendition.display(savedPos || undefined);
+/* Restore last position */
+let saved = localStorage.getItem(saveKey);
+rendition.display(saved || undefined);
 
-// Save reading progress
-rendition.on("relocated", (location) => {
-    localStorage.setItem(saveKey, location.start.cfi);
+/* Save progress */
+rendition.on("relocated", (loc) => {
+    localStorage.setItem(saveKey, loc.start.cfi);
 
     if (book.locations.length) {
-        const percent = book.locations.percentageFromCfi(location.start.cfi);
-        document.getElementById("progressBar").style.width = (percent * 100) + "%";
+        let pct = book.locations.percentageFromCfi(loc.start.cfi);
+        document.getElementById("progressBar").style.width = (pct * 100) + "%";
     }
 });
 
-// Generate locations for % bar
+/* Generate locations */
 book.ready.then(() => book.locations.generate(1500));
 
-// =============== KEYBOARD NAV (← →) ===============
+/* -------------------------
+   PAGE NAVIGATION
+-------------------------- */
+document.getElementById("prevArea").onclick = () => rendition.prev();
+document.getElementById("nextArea").onclick = () => rendition.next();
+
+/* Keyboard arrows */
 document.addEventListener("keydown", (e) => {
     if (e.key === "ArrowRight") rendition.next();
     if (e.key === "ArrowLeft") rendition.prev();
-});
-
-// =============== CLICK NAV (LEFT / RIGHT SIDE) ===============
-document.getElementById("viewer").addEventListener("click", function (e) {
-    const x = e.clientX;
-
-    if (x > window.innerWidth * 0.6) {
-        rendition.next();     // Click right → next page
-    } else if (x < window.innerWidth * 0.4) {
-        rendition.prev();     // Click left → prev page
-    }
 });
 </script>
 
