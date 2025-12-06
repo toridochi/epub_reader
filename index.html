@@ -11,7 +11,7 @@
 
 <body>
 
-<header class="home-header">
+<header class="home-header premium-header">
     <h1>📚 My Digital Library</h1>
 
     <div class="header-tools">
@@ -20,132 +20,121 @@
     </div>
 </header>
 
-<div id="book-grid" class="book-grid">
-    <div class="loading">Loading books...</div>
+<!-- HERO BANNER -->
+<div class="hero">
+    <div class="hero-content">
+        <h2>Kho sách cá nhân của <strong>Hồ Anh Nhựt</strong></h2>
+        <p>Nơi lưu trữ và thưởng thức những cuốn sách yêu thích – mọi lúc, mọi nơi.</p>
+    </div>
 </div>
 
-<!-- ⭐⭐ FOOTER ADD HERE ⭐⭐ -->
+<!-- FEATURED SECTION -->
+<section class="section">
+    <h3 class="section-title">⭐ Featured Books</h3>
+    <div id="featured-grid" class="featured-grid"></div>
+</section>
+
+<!-- RECENTLY ADDED -->
+<section class="section">
+    <h3 class="section-title">🆕 Recently Added</h3>
+    <div id="recent-grid" class="recent-grid"></div>
+</section>
+
+<!-- ALL BOOKS -->
+<section class="section">
+    <h3 class="section-title">📘 All Books</h3>
+    <div id="book-grid" class="book-grid"></div>
+</section>
+
+<!-- FOOTER -->
 <footer class="footer">
-    <div class="footer-box">
-        <span class="icon">📘</span>
-        <span class="text">Kho sách của <strong>Hồ Anh Nhựt</strong></span>
+    <div class="footer-inner">
+        <span>📘 Kho sách của <strong>Hồ Anh Nhựt</strong></span>
+        <span class="dot"></span>
+        <span>Made with ❤️ for reading</span>
     </div>
 </footer>
-<!-- ⭐⭐ END FOOTER ⭐⭐ -->
 
 <script>
 // ===============================
-// CONFIG — GITHUB
+// CONFIG
 // ===============================
 const GH_USER = "toridochi";
 const GH_REPO = "epub_reader";
 const GH_BRANCH = "main";
 
-const API_URL =
-  `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/books?ref=${GH_BRANCH}`;
+const API_URL = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/books?ref=${GH_BRANCH}`;
 
-// Dark mode toggle
 document.getElementById("themeToggle").onclick = () => {
     document.body.classList.toggle("dark");
 };
 
 // ===============================
-// FETCH BOOK LIST FROM GITHUB
+// LOAD BOOKS
 // ===============================
 async function loadBooks() {
-    const grid = document.getElementById("book-grid");
-    grid.innerHTML = "<div class='loading'>Fetching books...</div>";
-
     try {
         const response = await fetch(API_URL);
-        const files = await response.json();
+        let files = await response.json();
 
-        const epubFiles = files.filter(f => f.name.endsWith(".epub"));
+        files = files.filter(f => f.name.endsWith(".epub"));
 
-        displayBooks(epubFiles);
+        // For sections:
+        const featured = files.slice(0, 3);
+        const recent = files.slice(-3);
+
+        displayBooks(featured, "featured-grid");
+        displayBooks(recent, "recent-grid");
+        displayBooks(files, "book-grid");
     } catch (err) {
         console.error(err);
-        grid.innerHTML = "<div class='error'>Failed to load books</div>";
     }
 }
 
 loadBooks();
 
-// ==========================================================
-// ========== COVER CACHING + LAZY LOADING FUNCTION ==========
-// ==========================================================
-async function loadCoverWithCache(card, epubUrl) {
-    const img = card.querySelector(".lazy-cover");
-    const cacheKey = "cover_" + epubUrl;
-
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-        img.src = cached;
-        return;
-    }
-
-    try {
-        const book = ePub(epubUrl);
-        const coverUrl = await book.coverUrl();
-
-        if (coverUrl) {
-            const blob = await fetch(coverUrl).then(r => r.blob());
-            const reader = new FileReader();
-
-            reader.onloadend = () => {
-                const base64 = reader.result;
-                localStorage.setItem(cacheKey, base64);
-                img.src = base64;
-            };
-
-            reader.readAsDataURL(blob);
-        } else {
-            img.src = "default_cover.png";
-        }
-    } catch (e) {
-        img.src = "default_cover.png";
-    }
-}
-
 // ===============================
-// DISPLAY BOOK CARDS + LAZY LOADING
+// DISPLAY BOOK CARDS (Premium)
 // ===============================
-async function displayBooks(files) {
-    const grid = document.getElementById("book-grid");
+async function displayBooks(files, containerId) {
+    const grid = document.getElementById(containerId);
     grid.innerHTML = "";
 
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(e => {
-            if (e.isIntersecting) {
-                const card = e.target;
-                const epubUrl = card.dataset.epub;
-
-                loadCoverWithCache(card, epubUrl);
-                observer.unobserve(card);
-            }
-        });
-    }, { rootMargin: "200px" });
-
-    files.forEach(file => {
+    for (let file of files) {
         const cleanName = file.name.replace(/_/g, " ");
         const epubUrl = file.download_url;
 
+        // Skeleton effect before image loads
+        const skeleton = document.createElement("div");
+        skeleton.className = "book-card skeleton";
+        grid.appendChild(skeleton);
+
+        // Load cover
+        let coverImage = "default_cover.png";
+        try {
+            const book = ePub(epubUrl);
+            const cover = await book.coverUrl();
+            if (cover) coverImage = cover;
+        } catch {}
+
+        // Create actual card
         const div = document.createElement("div");
-        div.className = "book-card-2";
+        div.className = "book-card";
         div.dataset.name = cleanName.toLowerCase();
-        div.dataset.epub = epubUrl;
 
         div.innerHTML = `
-            <div class="book-cover-2">
-                <img data-src="${epubUrl}" src="default_cover.png" class="lazy-cover">
+            <div class="book-cover">
+                <img loading="lazy" src="${coverImage}" onerror="this.src='default_cover.png'">
             </div>
-            <div class="book-title-2">${cleanName}</div>
-            <a class="read-btn-2" href="reader.html?src=${encodeURIComponent(epubUrl)}">Read</a>
+            <div class="book-info">
+                <div class="book-title">${cleanName}</div>
+                <a class="read-btn" href="reader.html?src=${encodeURIComponent(epubUrl)}">Read →</a>
+            </div>
         `;
 
-        grid.appendChild(div);
-        observer.observe(div);
-    });
+        // Replace skeleton
+        grid.replaceChild(div, skeleton);
+    }
 }
 
 // ===============================
@@ -153,15 +142,13 @@ async function displayBooks(files) {
 // ===============================
 document.getElementById("searchInput").addEventListener("input", e => {
     const q = e.target.value.toLowerCase();
-    const items = document.querySelectorAll(".book-card-2");
+    const items = document.querySelectorAll(".book-card");
 
     items.forEach(card => {
-        const name = card.dataset.name;
-        card.style.display = name.includes(q) ? "block" : "none";
+        card.style.display = card.dataset.name.includes(q) ? "block" : "none";
     });
 });
 </script>
 
 </body>
 </html>
-
