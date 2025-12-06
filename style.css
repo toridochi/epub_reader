@@ -237,3 +237,52 @@ body {
     color: #ddd;
 }
 
+/* ====== PREMIUM FOOTER ====== */
+.footer {
+    width: 100%;
+    padding: 30px 0 40px;
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.footer-box {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(12px);
+    padding: 12px 28px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    border: 1px solid rgba(255,255,255,0.6);
+    transition: 0.25s ease;
+}
+
+.footer-box:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 22px rgba(0,0,0,0.12);
+}
+
+.footer-box .icon {
+    font-size: 20px;
+}
+
+.footer-box .text {
+    font-size: 15px;
+    color: #444;
+    font-weight: 500;
+}
+
+/* Dark mode */
+.dark .footer-box {
+    background: rgba(40,40,40,0.55);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 4px 15px rgba(255,255,255,0.05);
+}
+
+.dark .footer-box .text {
+    color: #ddd;
+}
+
