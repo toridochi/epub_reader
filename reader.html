@@ -128,8 +128,8 @@
 
 <script>
 const params = new URLSearchParams(window.location.search);
-const file = params.get("file");
-const fileUrl = "books/" + file;
+const fileUrl = params.get("src");
+
 
 // ---- Save Keys ----
 const keyPos = "reading-position-" + file;
@@ -231,3 +231,4 @@ document.getElementById("menuBtn").onclick = () => {
 
 </body>
 </html>
+
