@@ -24,6 +24,12 @@
     <div class="loading">Loading books...</div>
 </div>
 
+<!-- ⭐⭐ FOOTER ADD HERE ⭐⭐ -->
+<footer class="footer">
+    📘 Kho truyện của <strong>Hồ Anh Nhựt</strong>
+</footer>
+<!-- ⭐⭐ END FOOTER ⭐⭐ -->
+
 <script>
 // ===============================
 // CONFIG — GITHUB
@@ -69,14 +75,12 @@ async function loadCoverWithCache(card, epubUrl) {
     const img = card.querySelector(".lazy-cover");
     const cacheKey = "cover_" + epubUrl;
 
-    // ⏳ Load from cache instantly
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
         img.src = cached;
         return;
     }
 
-    // 🎨 If no cache → extract cover from EPUB
     try {
         const book = ePub(epubUrl);
         const coverUrl = await book.coverUrl();
@@ -107,19 +111,18 @@ async function displayBooks(files) {
     const grid = document.getElementById("book-grid");
     grid.innerHTML = "";
 
-    // Lazy loading observer
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(e => {
             if (e.isIntersecting) {
                 const card = e.target;
                 const epubUrl = card.dataset.epub;
+
                 loadCoverWithCache(card, epubUrl);
                 observer.unobserve(card);
             }
         });
     }, { rootMargin: "200px" });
 
-    // Create cards
     files.forEach(file => {
         const cleanName = file.name.replace(/_/g, " ");
         const epubUrl = file.download_url;
