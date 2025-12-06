@@ -7,46 +7,35 @@
 
 <link rel="stylesheet" href="style.css">
 
+<!-- EPUB.js -->
 <script src="js/jszip.min.js"></script>
 <script src="js/epub.min.js"></script>
 
 <style>
-/* ------------------- THEME ------------------- */
-:root {
-    --bg: #ffffff;
-    --text: #111;
-    --header-bg: #fff;
-    --header-border: #ddd;
-    --nav-hover: rgba(0,0,0,0.04);
-}
 
-body.dark {
-    --bg: #1c1c1e;
-    --text: #e5e5ea;
-    --header-bg: #2c2c2e;
-    --header-border: #444;
-    --nav-hover: rgba(255,255,255,0.05);
-}
-
+/* ===================== GLOBAL ====================== */
 body {
     margin: 0;
-    overflow: hidden;
-    background: var(--bg);
-    color: var(--text);
+    padding: 0;
+    font-family: "Inter", sans-serif;
+    background: var(--bg, #ffffff);
+    color: var(--text, #000000);
+    transition: background 0.3s;
 }
 
-/* ------------------- HEADER ------------------- */
+/* ===================== HEADER ====================== */
 .reader-header {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 55px;
-    background: var(--header-bg);
-    border-bottom: 1px solid var(--header-border);
+    background: var(--header-bg, #ffffff);
+    color: var(--text);
+    border-bottom: 1px solid #ddd;
     display: flex;
     align-items: center;
-    padding: 10px 15px;
+    padding: 8px 15px;
     z-index: 20;
 }
 
@@ -56,205 +45,222 @@ body {
     color: #fff;
     border-radius: 6px;
     text-decoration: none;
+    font-size: 14px;
     margin-right: 15px;
+}
+
+.dark .reader-header {
+    background: #1c1c1e;
+    border-bottom: 1px solid #444;
+}
+
+#book-title {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* TOC button */
+#tocBtn {
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: #eee;
+    cursor: pointer;
     font-size: 14px;
 }
+.dark #tocBtn {
+    background: #333;
+    color: #fff;
+}
 
-.header-btn {
-    padding: 6px 10px;
-    background: #eee;
-    border-radius: 6px;
+/* DARK MODE BUTTON */
+#darkModeToggle {
     margin-left: 10px;
     cursor: pointer;
-}
-body.dark .header-btn {
-    background: #3a3a3c;
-    color: #e5e5ea;
+    font-size: 18px;
 }
 
-/* ------------------- PROGRESS BAR ------------------- */
-#progressBar {
-    height: 3px;
-    width: 0%;
-    background: #007bff;
-    margin-top: 55px;
+/* ===================== TOC PANEL ====================== */
+#tocPanel {
+    position: fixed;
+    right: -300px;
+    top: 55px;
+    width: 260px;
+    height: calc(100vh - 55px);
+    overflow-y: auto;
+    background: var(--header-bg, #fff);
+    border-left: 1px solid #ccc;
+    transition: 0.3s;
+    padding: 10px;
+    z-index: 30;
 }
 
-/* ------------------- VIEWER ------------------- */
+.dark #tocPanel {
+    background: #1c1c1e;
+    border-left: 1px solid #444;
+}
+
+/* ===================== VIEWER ====================== */
 #viewer {
     position: fixed;
-    top: 58px;
+    top: 55px;
     left: 0;
     width: 100%;
-    height: calc(100vh - 58px);
+    height: calc(var(--vh, 1vh) * 100 - 55px); /* <-- MOBILE FIX */
     overflow: hidden;
-    background: var(--bg);
+    background: var(--bg, #ffffff);
 }
 
-/* ------------------- CLICK NAVIGATION ------------------- */
+.dark {
+    --bg: #1c1c1e;
+    --text: #e5e5ea;
+    --header-bg: #2c2c2e;
+}
+
+/* Navigation click zones */
 .nav-area {
     position: fixed;
-    top: 58px;
+    top: 55px;
     width: 50%;
-    height: calc(100vh - 58px);
-    z-index: 15;
+    height: calc(100vh - 55px);
+    z-index: 10;
 }
+
 #prevArea { left: 0; }
 #nextArea { right: 0; }
 
-.nav-area:hover {
-    background: var(--nav-hover);
-}
-
-/* ------------------- TOC DRAWER ------------------- */
-#tocDrawer {
-    position: fixed;
-    top: 0;
-    left: -300px;
-    width: 260px;
-    height: 100vh;
-    background: var(--header-bg);
-    border-right: 1px solid var(--header-border);
-    padding: 15px;
-    transition: 0.25s;
-    z-index: 30;
-    overflow-y: auto;
-}
-
-#tocDrawer.open {
-    left: 0;
-}
-
-.toc-item {
-    padding: 8px 5px;
-    border-radius: 6px;
-    cursor: pointer;
-}
-.toc-item:hover {
-    background: var(--nav-hover);
-}
-
-.toc-current {
-    background: #007bff !important;
-    color: white !important;
-}
 </style>
 </head>
 
 <body>
 
-<!-- TOC DRAWER -->
-<div id="tocDrawer">
-    <h3>📖 Contents</h3>
-    <div id="tocList">Loading...</div>
-</div>
-
-<!-- HEADER -->
+<!-- ===================== HEADER ====================== -->
 <div class="reader-header">
     <a class="back-btn" href="index.html">← Back</a>
-    <h2 id="book-title" style="flex:1;">Loading...</h2>
+    <div id="book-title">Loading...</div>
 
-    <button id="tocBtn" class="header-btn">📖 TOC</button>
+    <button id="tocBtn">📘 TOC</button>
+    <span id="darkModeToggle">🌙</span>
 </div>
 
-<div id="progressBar"></div>
+<!-- ===================== TOC PANEL ====================== -->
+<div id="tocPanel"></div>
 
-<!-- READER VIEW -->
+<!-- ===================== VIEWPORT ====================== -->
 <div id="viewer"></div>
 
+<!-- NAVIGATION ZONES -->
 <div id="prevArea" class="nav-area"></div>
 <div id="nextArea" class="nav-area"></div>
 
 <script>
-/* APPLY THEME FROM INDEX PAGE */
-if (localStorage.getItem("theme") === "dark") {
-    document.body.classList.add("dark");
+/* ===========================================================
+    MOBILE VIEWPORT FIX (100vh bug)
+=========================================================== */
+function updateVH() {
+    document.documentElement.style.setProperty("--vh", (window.innerHeight * 0.01) + "px");
 }
+updateVH();
+window.addEventListener("resize", updateVH);
+window.addEventListener("orientationchange", updateVH);
 
-/* LOAD EPUB */
+/* ===========================================================
+    LOAD EPUB FILE
+=========================================================== */
 const params = new URLSearchParams(window.location.search);
 const fileUrl = params.get("src");
 
-if (!fileUrl) alert("Missing src parameter");
+if (!fileUrl) alert("Missing 'src' parameter");
 
 const fileName = decodeURIComponent(fileUrl.split("/").pop());
 document.getElementById("book-title").textContent = fileName;
 
+// Storage key for bookmark
 const saveKey = "pos_" + fileName;
 
 const book = ePub(fileUrl);
 
 const rendition = book.renderTo("viewer", {
-    width: "100%",
-    height: "100%",
-    spread: "auto",
     flow: "paginated",
-    allowScriptedContent: true
+    width: "100%",
+    height: "100%"
 });
 
+// Load saved position
 let saved = localStorage.getItem(saveKey);
 rendition.display(saved || undefined);
 
-/* SAVE PROGRESS */
-rendition.on("relocated", (loc) => {
+// Save each movement
+rendition.on("relocated", function (loc) {
     localStorage.setItem(saveKey, loc.start.cfi);
-
-    if (book.locations.length) {
-        let pct = book.locations.percentageFromCfi(loc.start.cfi);
-        document.getElementById("progressBar").style.width = (pct * 100) + "%";
-    }
-
-    updateTOCHighlight(loc.start.cfi);
 });
 
-/* GENERATE LOCATIONS */
-book.ready.then(() => book.locations.generate(1500));
+/* ===========================================================
+    TOC PANEL
+=========================================================== */
+book.ready.then(() => {
+    return book.loaded.navigation;
+}).then(toc => {
+    const panel = document.getElementById("tocPanel");
+    panel.innerHTML = "";
 
-/* -------------------------- TOC LOADER -------------------------- */
-book.loaded.navigation.then(nav => {
-    const toc = nav.toc;
-    const tocList = document.getElementById("tocList");
-
-    tocList.innerHTML = "";
-
-    toc.forEach(item => {
+    toc.toc.forEach(ch => {
         let div = document.createElement("div");
-        div.className = "toc-item";
-        div.textContent = item.label;
-        div.dataset.href = item.href;
+        div.style.padding = "6px 0";
+        div.style.cursor = "pointer";
+        div.textContent = ch.label;
 
         div.onclick = () => {
-            rendition.display(item.href);
-            toggleTOC(false);
+            rendition.display(ch.href);
+            panel.style.right = "-300px";
         };
 
-        tocList.appendChild(div);
+        panel.appendChild(div);
     });
 });
 
-/* Highlight current TOC item */
-function updateTOCHighlight(cfi) {
-    const items = document.querySelectorAll(".toc-item");
-    items.forEach(el => el.classList.remove("toc-current"));
-}
+// TOC Toggle
+document.getElementById("tocBtn").onclick = () => {
+    const panel = document.getElementById("tocPanel");
+    panel.style.right = panel.style.right === "0px" ? "-300px" : "0px";
+};
 
-/* -------------------------- TOC TOGGLE -------------------------- */
-function toggleTOC(forceState) {
-    const drawer = document.getElementById("tocDrawer");
-    if (forceState === true) drawer.classList.add("open");
-    else if (forceState === false) drawer.classList.remove("open");
-    else drawer.classList.toggle("open");
-}
+/* ===========================================================
+    DARK MODE
+=========================================================== */
+document.getElementById("darkModeToggle").onclick = () => {
+    document.body.classList.toggle("dark");
 
-document.getElementById("tocBtn").onclick = () => toggleTOC();
+    // apply dark mode inside EPUB iframe
+    try {
+        const contents = rendition.getContents();
+        contents.forEach(c => {
+            c.addStylesheetRules({
+                "body": { "background": "#1c1c1e", "color": "#e5e5ea" }
+            });
+        });
+    } catch(e){}
+};
 
-/* -------------------------- PAGE NAVIGATION -------------------------- */
+/* ===========================================================
+    CLICK NAVIGATION
+=========================================================== */
 document.getElementById("prevArea").onclick = () => rendition.prev();
 document.getElementById("nextArea").onclick = () => rendition.next();
 
-document.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowRight") rendition.next();
-    if (e.key === "ArrowLeft") rendition.prev();
+/* ===========================================================
+    SWIPE NAVIGATION (MOBILE)
+=========================================================== */
+let touchStartX = 0;
+
+document.getElementById("viewer").addEventListener("touchstart", e => {
+    touchStartX = e.changedTouches[0].screenX;
+});
+
+document.getElementById("viewer").addEventListener("touchend", e => {
+    let endX = e.changedTouches[0].screenX;
+    if (endX - touchStartX > 80) rendition.prev();
+    if (touchStartX - endX > 80) rendition.next();
 });
 </script>
 
